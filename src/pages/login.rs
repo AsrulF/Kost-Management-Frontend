@@ -29,9 +29,10 @@ pub fn login_page() -> Html {
             wasm_bindgen_futures::spawn_local(async move {
                 match api::login(username, password).await {
                     Ok(auth) => {
-                        LocalStorage::set("token", auth.token).unwrap();
+                        LocalStorage::set("token", auth.token.clone()).unwrap();
                         auth_ctx.set(AuthContext {
                             user: Some(auth.user),
+                            token: Some(auth.token),
                         });
                         navigator.push(&Route::Dashboard);
                     },

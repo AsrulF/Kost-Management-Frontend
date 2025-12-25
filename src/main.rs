@@ -1,6 +1,6 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::{auth_context::AuthContext, router::{Route, switch}};
+use crate::{auth_context::AuthContext, router::{Route}, pages::{login::LoginPage, dashboard::DashboardPage}};
 
 mod api;
 mod auth_context;
@@ -12,12 +12,26 @@ mod pages {
 
 #[function_component(App)]
 fn app() -> Html {
-    let auth_state = use_state(|| AuthContext { user: None });
+    let auth_state = use_state(|| AuthContext { user: None , token: None });
 
     html! {
-        <ContextProvider<UseStateHandle<AuthContext>> context={auth_state}>
+        <ContextProvider<UseStateHandle<AuthContext>> context={auth_state.clone()}>
             <BrowserRouter>
-                <Switch<Route> render={switch} />
+                <Switch<Route> render={move |route| {
+                    let auth = (*auth_state).clone();
+
+                    match route {
+                        Route::Login => html!{ <LoginPage /> },
+                        Route::Dashboard => {
+                            if auth.user.is_some() && auth.token.is_some() {
+                                html! { <DashboardPage />}
+                            } else {
+                                html! { <LoginPage /> }
+                            }
+                        }
+                    }
+
+                }} />
             </BrowserRouter>
         </ContextProvider<UseStateHandle<AuthContext>>>
     }

@@ -1,6 +1,6 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::pages::{login::LoginPage, dashboard::DashboardPage};
+use crate::{auth_context::AuthContext, pages::{dashboard::DashboardPage, login::LoginPage}};
 
 #[derive(Routable, PartialEq, Clone, Debug)]
 pub enum Route {
@@ -13,6 +13,6 @@ pub enum Route {
 pub fn switch(route: Route) -> Html {
     match route {
         Route::Login => html! {<LoginPage />},
-        Route::Dashboard => html! {<DashboardPage />}
+        Route::Dashboard => html! {<DashboardPage />},
     }
 }
