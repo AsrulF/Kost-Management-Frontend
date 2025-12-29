@@ -64,6 +64,7 @@ pub fn dashboard_page() -> Html {
             } 
 
             <LogoutButton />
+            <NavBar />
         </div>
     }
 }
@@ -93,7 +94,29 @@ pub fn LogoutButton() -> Html {
     }
 }
 
-// #[component]
-// pub fn create_user() -> Html {
+#[component]
+pub fn NavBar() -> Html {
+    let navigator = use_navigator().unwrap();
 
-// }
+
+    let create_user_on_click = {
+        let navigator = navigator.clone();
+
+        Callback::from(move |_: MouseEvent| {
+            navigator.push(&Route::CreateUser);
+        })
+    };
+
+    html! {
+        <div>
+            <button
+                onclick={create_user_on_click}
+            >
+                {"Create User"}
+            </button>
+            <button>
+                {"Kost Details"}
+            </button>
+        </div>
+    }
+}

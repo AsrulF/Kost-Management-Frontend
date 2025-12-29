@@ -1,6 +1,6 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::{app_state::AppState, auth_context::AuthContext, pages::{dashboard::DashboardPage, login::LoginPage}, router::Route};
+use crate::{app_state::AppState, auth_context::AuthContext, pages::{createuser::CreateUserPage, dashboard::DashboardPage, login::LoginPage}, router::Route};
 
 mod api;
 mod auth_context;
@@ -9,6 +9,7 @@ mod app_state;
 mod pages {
     pub mod login;
     pub mod dashboard;
+    pub mod createuser;
 }
 
 #[function_component(App)]
@@ -27,7 +28,14 @@ fn app() -> Html {
                             Route::Login => html!{ <LoginPage /> },
                             Route::Dashboard => {
                                 if auth.user.is_some() && auth.token.is_some() {
-                                    html! { <DashboardPage />}
+                                    html! { <DashboardPage /> }
+                                } else {
+                                    html! { <LoginPage /> }
+                                }
+                            },
+                            Route::CreateUser => {
+                                if auth.user.is_some() && auth.token.is_some() {
+                                    html! { <CreateUserPage /> }
                                 } else {
                                     html! { <LoginPage /> }
                                 }
