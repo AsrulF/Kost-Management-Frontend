@@ -1,9 +1,10 @@
 use serde::{Deserialize};
 use gloo_net::http::Request;
+use uuid::Uuid;
 
 #[derive(PartialEq, Deserialize, Clone)]
 pub struct User {
-    pub user_id: u64,
+    pub user_id: Uuid,
     pub username: String,
     pub password: String,
 }
