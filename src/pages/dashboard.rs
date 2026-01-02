@@ -27,6 +27,8 @@ pub fn dashboard_page() -> Html {
                         None => return,
                     };
 
+                    let auth_header = format!("Bearer {}", token);
+
                     app_state.set(AppState {
                         data: None,
                         is_loading: true,
@@ -35,7 +37,7 @@ pub fn dashboard_page() -> Html {
                     let data = Request::get("http://127.0.0.1:8080/app-data")
                         .header(
                             "Authorization",
-                            format!("Bearer {}", token).as_str()
+                            &auth_header
                         )
                         .send()
                         .await
@@ -113,6 +115,9 @@ pub fn NavBar() -> Html {
                 onclick={create_user_on_click}
             >
                 {"Create User"}
+            </button>
+            <button>
+                {"Create New Kost"}
             </button>
             <button>
                 {"Kost Details"}

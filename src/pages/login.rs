@@ -52,6 +52,7 @@ pub fn login_page() -> Html {
                 })}
             />
             <input
+                type="password"
                 placeholder="password"
                 oninput={Callback::from(move |e: InputEvent| {
                     password.set(e.target_unchecked_into::<web_sys::HtmlInputElement>().value());

@@ -27,6 +27,8 @@ pub fn create_user_page() -> Html {
     let password = use_state(|| String::new());
     let user_role = use_state(|| String::new());
     let navigator = use_navigator().unwrap();
+    let error_message = use_state(|| None::<String>);
+    let show_pop_up = use_state(|| false);
 
     let on_submit = {
         let auth_ctx = auth_ctx.clone();
@@ -35,6 +37,8 @@ pub fn create_user_page() -> Html {
         let password = password.clone();
         let user_role = user_role.clone();
         let navigator = navigator.clone();
+        let error_message = error_message.clone();
+        let show_pop_up = show_pop_up.clone();
 
         Callback::from(move |e: SubmitEvent| {
             e.prevent_default();
@@ -45,6 +49,8 @@ pub fn create_user_page() -> Html {
             let password = password.clone();
             let user_role = user_role.clone();
             let navigator = navigator.clone();
+            let error_message = error_message.clone();
+            let show_pop_up = show_pop_up.clone();
 
             wasm_bindgen_futures::spawn_local(async move {
                 let token = match &auth_ctx.token {
@@ -60,7 +66,7 @@ pub fn create_user_page() -> Html {
                     user_role: (*user_role).clone(),
                 };
 
-                Request::post("http://127.0.0.1:8080/users")
+                let resp = Request::post("http://127.0.0.1:8080/users")
                     .header(
                         "Authorization", 
                         &auth_header
@@ -68,27 +74,42 @@ pub fn create_user_page() -> Html {
                     .json(&payload)
                     .unwrap()
                     .send()
-                    .await
-                    .unwrap();
+                    .await;
 
-                let data = Request::get("http://127.0.0.1:8080/app-data")
-                    .header(
-                        "Authorization",
-                        format!("Bearer {}", token).as_ref()
-                    )
-                    .send()
-                    .await
-                    .unwrap()
-                    .json::<AppData>()
-                    .await
-                    .unwrap();
+                match resp {
+                    Ok(response) => {
+                        if response.status() == 409 {
+                            error_message.set(Some("Username already existed".to_string()));
+                            show_pop_up.set(true);
+                        } else if response.ok() {
+                            show_pop_up.set(false);
+                            error_message.set(None);
 
-                app_ctx.set(AppState {
-                    data: Some(data),
-                    is_loading: false,
-                });
+                            let data = Request::get("http://127.0.0.1:8080/app-data")
+                                .header(
+                                    "Authorization",
+                                    format!("Bearer {}", token).as_ref()
+                                )
+                                .send()
+                                .await
+                                .unwrap()
+                                .json::<AppData>()
+                                .await
+                                .unwrap();
 
-                navigator.push(&Route::Dashboard);
+                            app_ctx.set(AppState {
+                                data: Some(data),
+                                is_loading: false,
+                            });
+
+                            navigator.push(&Route::Dashboard);
+                        }
+                    }
+                    Err(_) => {
+                        error_message.set(Some("Network error".to_string()));
+                        show_pop_up.set(true);
+                    }
+                }
             });
         })
     };
@@ -120,6 +141,25 @@ pub fn create_user_page() -> Html {
                 <button>
                     {"Create User"}
                 </button>
+                {
+                    if *show_pop_up {
+                        html! {
+                            <div>
+                                <p>{error_message.clone().as_ref().unwrap()}</p>
+                                <button
+                                    onclick={{
+                                        let show_pop_up = show_pop_up.clone();
+                                        Callback::from(move |_| show_pop_up.set(false))
+                                    }}
+                                >
+                                    {"Close"}
+                                </button>
+                            </div>
+                        }
+                    } else {
+                        html! {}
+                    }
+                }
             </form>
         </div>
     }
